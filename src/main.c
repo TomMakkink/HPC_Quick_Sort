@@ -28,7 +28,7 @@ bool test(int* arr, int length){
 
 
 int main(int argc, char* argv[]){
-    sort(lenArr, argc, argv);
+    sort(lenArr);
     return 0; 
 }
 
@@ -72,7 +72,7 @@ void run_openmp_psrs_sort(int * arr){
 }
 
 
-void sort(int length, int argc, char* argv[]){
+void sort(int length){
     int minMum = 1;
 	int maxNum = lenArr;
 
@@ -106,9 +106,6 @@ void sort(int length, int argc, char* argv[]){
     run_quick_sort_parallel(parallelQSortArray);
     
     run_openmp_psrs_sort(PRSPQSortArray);
-
-    // MPI_Init(&argc,&argv);  
-    // psrs_mpi(mpi_array, length);
 
     return 0; 
 }
