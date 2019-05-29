@@ -4,6 +4,8 @@
 void swap(int* left, int* right);
 int partition(int arr [], int low, int high);
 void quickSortSerial(int arr [], int low, int high);
+void quickSortParallel(int arr [], int low, int high);
+void quickSortParallelRun(int arr [], int low, int high);
 
 int lcompare(const void * ptr2num1, const void * ptr2num2);
 void calc_partition_borders(int array[],

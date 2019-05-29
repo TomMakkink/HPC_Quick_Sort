@@ -43,13 +43,30 @@ void run_quick_sort_serial(int * arr, int length, int runs, int n){
 
     // printArray(arr, length);
 
-    printf("Serial took %f10 seconds to execute with array length of %d \n", time_taken, length);   
+    printf("Serial Quicksort took %f10 seconds to execute with array length of %d \n", time_taken, length);   
+    if (test(arr, length)) printf("Test Passed \n");
+    else printf("Testing failed. Array was not sorted correctly \n");
+}
+
+void run_quick_sort_parallel(int * arr, int length, int runs, int n){
+    printf("Running Parallel QuickSort...\n");
+    double start, end; 
+    
+    start = omp_get_wtime(); 
+    for (int p = 0; p < runs; p++){
+        quickSortParallel(arr, 0, n-1);
+    }
+    end = omp_get_wtime();
+    double time_taken = (end - start) / runs;
+
+
+    printf("Parallel Quicksort took %f10 seconds to execute with array length of %d \n", time_taken, length);   
     if (test(arr, length)) printf("Test Passed \n");
     else printf("Testing failed. Array was not sorted correctly \n");
 }
 
 void run_openmp_psrs_sort(int * arr, int length, double runs, int n){
-    printf("Running OpenMP QuickSort with Regular Sampling...\n");
+    printf("Running OpenMP Parallel Sort with Regular Sampling...\n");
     double start, end; 
     
     start = omp_get_wtime(); 
@@ -69,18 +86,20 @@ void sort(int length, int argc, char* argv[]){
     
     int serial_array[length];
     int openmp_array[length];
-    int mpi_array[length];
+    int parallel_array[length];
 
     srand(time(0));
     for (int i = 0; i < length; i++){   
         int randval = rand() % 100; 
-        serial_array[i] = randval;
-        openmp_array[i] = randval; 
-        mpi_array[i]    = randval; 
+        serial_array[i]   = randval;
+        openmp_array[i]   = randval; 
+        parallel_array[i] = randval; 
     }
     int n = sizeof(serial_array)/sizeof(serial_array[0]);
 
-    run_quick_sort_serial(serial_array, length, runs, n); 
+    run_quick_sort_serial(serial_array, length, runs, n);
+
+    run_quick_sort_parallel(parallel_array, length, runs, n);
     
     run_openmp_psrs_sort(openmp_array, length, runs, n);
 

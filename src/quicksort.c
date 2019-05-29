@@ -1,6 +1,8 @@
+// Sourced from: https://www.geeksforgeeks.org/quick-sort/ and 
+// https://github.com/eduardlopez/quicksort-parallel/blob/master/quicksort-omp.h
 #include "quicksort.h"
-// Sourced from: https://www.geeksforgeeks.org/quick-sort/
 #include <stdio.h> 
+#define OMP_CUTOFF 100
 
   
 // A utility function to swap two elements 
@@ -54,4 +56,29 @@ void quickSortSerial(int arr [], int low, int high)
         quickSortSerial(arr, pi + 1, high); 
     }
 } 
+
+void quickSortParallelRun(int arr [], int low, int high){
+    if (low < high){
+        int pi = partition(arr, low, high); 
+
+        if ((high - low) < OMP_CUTOFF){       
+            quickSortParallelRun(arr, low, pi - 1); 
+            quickSortParallelRun(arr, pi + 1, high);       
+        } else if (high - low > OMP_CUTOFF) {      
+            #pragma omp task 
+            quickSortParallelRun(arr, low, pi - 1);
+            #pragma omp task
+            quickSortParallelRun(arr, pi + 1, high);
+        }
+    }
+}
+
+void quickSortParallel(int arr [], int low, int high){
+
+    #pragma omp parallel
+    {
+        #pragma omp single nowait
+        quickSortParallelRun(arr, low, high);
+    }
+}
   
