@@ -3,7 +3,10 @@
 #include <stdlib.h>
 #include <omp.h>
 #include <stdbool.h>
-#include "quicksort.h"
+#include "quicksort-omp.h"
+
+int lenArr = 1000000; 
+int numthreads = 8;
 
 /* Function to print an array */
 void printArray(int arr[], int size) 
@@ -25,83 +28,84 @@ bool test(int* arr, int length){
 
 
 int main(int argc, char* argv[]){
-	int length = 10000; 
-    sort(length, argc, argv);
+    sort(lenArr, argc, argv);
     return 0; 
 }
 
-void run_quick_sort_serial(int * arr, int length, int runs, int n){
-    printf("Running Serial QuickSort...\n");
+void run_quick_sort_serial(int * arr){
+    printf("\nRunning Serial QuickSort...\n"); fflush(stdout);
     double start, end; 
-    
     start = omp_get_wtime(); 
-    for (int p = 0; p < runs; p++){
-        quickSortSerial(arr, 0, n-1);
-    }
+    quickSortSerial(arr, 0, lenArr-1);
     end = omp_get_wtime();
-    double time_taken = (end - start) / runs;
+    double time_taken = end - start;
 
-    // printArray(arr, length);
-
-    printf("Serial Quicksort took %f10 seconds to execute with array length of %d \n", time_taken, length);   
-    if (test(arr, length)) printf("Test Passed \n");
+    printf("Serial Quicksort took %f10 seconds to execute with array length of %d \n", time_taken, lenArr);   
+    if (test(arr, lenArr)) printf("Test Passed \n");
     else printf("Testing failed. Array was not sorted correctly \n");
 }
 
-void run_quick_sort_parallel(int * arr, int length, int runs, int n){
-    printf("Running Parallel QuickSort...\n");
+void run_quick_sort_parallel(int * arr){
+    printf("\nRunning Parallel QuickSort...\n");
     double start, end; 
-    
     start = omp_get_wtime(); 
-    for (int p = 0; p < runs; p++){
-        quickSortParallel(arr, 0, n-1);
-    }
+    quickSort_parallel(arr, lenArr, numthreads);
     end = omp_get_wtime();
-    double time_taken = (end - start) / runs;
+    double time_taken = end - start;
 
-
-    printf("Parallel Quicksort took %f10 seconds to execute with array length of %d \n", time_taken, length);   
-    if (test(arr, length)) printf("Test Passed \n");
+    printf("Parallel Quicksort took %f10 seconds to execute with array length of %d \n", time_taken, lenArr);   
+    if (test(arr, lenArr)) printf("Test Passed \n");
     else printf("Testing failed. Array was not sorted correctly \n");
 }
 
-void run_openmp_psrs_sort(int * arr, int length, double runs, int n){
-    printf("Running OpenMP Parallel Sort with Regular Sampling...\n");
+void run_openmp_psrs_sort(int * arr){
+    printf("\nRunning OpenMP Parallel Sort with Regular Sampling...\n");
     double start, end; 
     
     start = omp_get_wtime(); 
-    for (int p = 0; p < runs; p++){
-        psrs_sort(arr, n);
-    }
+    psrs_sort(arr, lenArr);
     end = omp_get_wtime();
-    double time_taken = (end - start) / runs;
-    printf("OpenMP Parallel took %f10 seconds to execute with array length of %d \n", time_taken, length);   
-    if (test(arr, length)) printf("Test Passed \n");
+    double time_taken = end - start;
+    printf("OpenMP Parallel took %f10 seconds to execute with array length of %d \n", time_taken, lenArr);   
+    if (test(arr, lenArr)) printf("Test Passed \n");
     else printf("Testing failed. Array was not sorted correctly \n");
 }
 
 
 void sort(int length, int argc, char* argv[]){
-    int runs = 10; 
+    int minMum = 1;
+	int maxNum = lenArr;
+
+	int* serialQSortArray;
+	int* parallelQSortArray; 
+	int* PRSPQSortArray;
+	serialQSortArray = (int*) malloc(lenArr*sizeof(int));
+	parallelQSortArray = (int*) malloc(lenArr*sizeof(int));
+	PRSPQSortArray = (int*) malloc(lenArr*sizeof(int));
+	
+	printf("\nSize of the array (aprox.): %lu MBytes \n", (lenArr*sizeof(int)/(1024*1024)) );
+	printf("TOTAL MEMORY ALLOCATED:  3 x array = (aprox.): %lu MBytes \n\n", (lenArr*sizeof(int)/(1024*1024))*3 );  
+	
+	// Initialise the array with random numbers
+	int i;
+	srand(time(0)); // seed
+	printf("Initializing the arrays with random numbers...\n");
+	for (i=0; i<lenArr; i++){
+		// RAND_MAX = 2147483647 = INT_MAX 
+		// printf("RAND_MAX %u \n", RAND_MAX );
+		serialQSortArray[i] = minMum+(rand()%maxNum);
+		parallelQSortArray[i] = serialQSortArray[i];
+		PRSPQSortArray[i] = serialQSortArray[i];
+		//printf("%d \n", arr1[i] ); 
+	}
+	printf("Initialization complete\n");
     
-    int serial_array[length];
-    int openmp_array[length];
-    int parallel_array[length];
-
-    srand(time(0));
-    for (int i = 0; i < length; i++){   
-        int randval = rand() % 100; 
-        serial_array[i]   = randval;
-        openmp_array[i]   = randval; 
-        parallel_array[i] = randval; 
-    }
-    int n = sizeof(serial_array)/sizeof(serial_array[0]);
-
-    run_quick_sort_serial(serial_array, length, runs, n);
-
-    run_quick_sort_parallel(parallel_array, length, runs, n);
     
-    run_openmp_psrs_sort(openmp_array, length, runs, n);
+    run_quick_sort_serial(serialQSortArray);
+
+    run_quick_sort_parallel(parallelQSortArray);
+    
+    run_openmp_psrs_sort(PRSPQSortArray);
 
     // MPI_Init(&argc,&argv);  
     // psrs_mpi(mpi_array, length);
