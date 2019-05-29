@@ -1,0 +1,9 @@
+# Compiled Source #
+###################
+*.exe 
+*.o
+
+# Files #
+#########
+build/*
+qsort
